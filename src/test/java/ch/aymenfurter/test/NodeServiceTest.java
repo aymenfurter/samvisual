@@ -1,10 +1,12 @@
 package ch.aymenfurter.test;
 
 
-import com.google.common.collect.Lists;
+import static org.fest.assertions.api.Assertions.assertThat;
 
-import ch.aymenfurter.model.NodeResult;
-import ch.aymenfurter.services.SAMVisualService;
+import java.util.List;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
@@ -12,7 +14,6 @@ import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.lifecycle.SingletonResourceProvider;
 import org.apache.cxf.transport.local.LocalConduit;
 import org.eclipse.persistence.jaxb.rs.MOXyJsonProvider;
-import static org.fest.assertions.api.Assertions.assertThat;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -21,9 +22,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.util.List;
+import com.google.common.collect.Lists;
+
+import ch.aymenfurter.model.SAMNodeResult;
+import ch.aymenfurter.services.SAMVisualService;
 
 /**
  * Test service with in-memory local transport.
@@ -82,7 +84,7 @@ public class NodeServiceTest {
         assertThat(response.getEntity().toString())
                 .startsWith("<?xml");
 
-        NodeResult nodeResult = client.get(NodeResult.class);
+        SAMNodeResult nodeResult = client.get(SAMNodeResult.class);
         assertThat(nodeResult.getNodes()).isNotEmpty();
     }
 
@@ -95,7 +97,7 @@ public class NodeServiceTest {
         LOG.info("Response is\n{}", response.getEntity().toString());
         assertThat(response.getStatus()).isEqualTo(Response.Status.OK.getStatusCode());
 
-        NodeResult nodeResult = client.get(NodeResult.class);
+        SAMNodeResult nodeResult = client.get(SAMNodeResult.class);
         assertThat(nodeResult.getNodes()).isNotEmpty();
     }
 }

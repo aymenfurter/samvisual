@@ -3,7 +3,7 @@ package ch.aymenfurter.model;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
-public class NodeConnection {
+public class SAMNodeConnection {
     private String sourceGraphName;
     private String targetGraphName;
     private int graphWeight; 

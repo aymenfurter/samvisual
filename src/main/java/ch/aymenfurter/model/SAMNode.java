@@ -3,7 +3,7 @@ package ch.aymenfurter.model;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
-public class Node {
+public class SAMNode {
     private String desc;
 
     public String getName() {
@@ -16,7 +16,7 @@ public class Node {
     
     @Override
     public String toString() {
-        return "Node{" +
+        return "SAMNode{" +
                 "desc='" + desc +
                 "'}";
     }
