@@ -32,7 +32,7 @@ public class SAMNodeConnectionResult {
 
     @Override
     public String toString() {
-        return "SAMNodeResult{" +
+        return "SAMNodeConnectionResult{" +
                 "nodesConnections=" + nodesConnections +
                 '}';
     }
