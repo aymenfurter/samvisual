@@ -1,7 +1,10 @@
 package ch.aymenfurter.services;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
@@ -10,6 +13,10 @@ import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ch.aymenfurter.elk.ELKClient;
+import ch.aymenfurter.elk.model.AggregationBucket;
+import ch.aymenfurter.elk.model.AggregationBucketServerBucketEntry;
+import ch.aymenfurter.elk.model.ResponseContainer;
 import ch.aymenfurter.model.SAMNode;
 import ch.aymenfurter.model.SAMNodeConnection;
 import ch.aymenfurter.model.SAMNodeConnectionResult;
@@ -22,19 +29,27 @@ public class SAMVisualService {
     public SAMVisualService() {
     }
 
+    
     @GET
     @javax.ws.rs.Path("/nodes/")
-    public SAMNodeResult getSAMNodes() {
+    public SAMNodeResult getSAMNodes() {    	
+    	// FIXME: Multiple Requests    	
+    	ResponseContainer container = ELKClient.getEntries();
+    	Set<String> nodesSet = new HashSet<String>();
+    	
+    	for (AggregationBucket bucket : container.getAggregation().getAggregationEntries().getBuckets()) {
+    		for (AggregationBucketServerBucketEntry entry: bucket.getListOfServers().getEntries()) { 
+    			nodesSet.add(entry.getSourceServer());
+    		}
+    	}
+    	
     	List<SAMNode> nodes = new ArrayList<SAMNode>();
-    	
-    	SAMNode node = new SAMNode();
-    	node.setName("test");
-    	
-    	SAMNode node2 = new SAMNode();
-    	node2.setName("test2");
-    	
-    	nodes.add(node);
-    	nodes.add(node2); 
+
+    	for (String nodeName : nodesSet) {
+    		SAMNode node = new SAMNode();
+        	node.setName(nodeName);
+        	nodes.add(node);
+    	}
     	
     	return new SAMNodeResult(nodes);
     }
@@ -43,12 +58,33 @@ public class SAMVisualService {
     @javax.ws.rs.Path("/nodeconnections/")
     public SAMNodeConnectionResult getNodeConnections() {
     	List<SAMNodeConnection> nodeConnection = new ArrayList<SAMNodeConnection>();
+    	HashMap<String, SAMNodeConnection> nodeConnections = new HashMap<String, SAMNodeConnection>();
+    	ResponseContainer container = ELKClient.getEntries();
+
+    	for (AggregationBucket bucket : container.getAggregation().getAggregationEntries().getBuckets()) {
+    		String sourceLinkBucket = "";
+    		for (AggregationBucketServerBucketEntry entry: bucket.getListOfServers().getEntries()) {
+    			
+    			if (!sourceLinkBucket.equals("")) {
+    				SAMNodeConnection nodeCon = new SAMNodeConnection();    				
+    		    	nodeCon.setSourceGraphName(sourceLinkBucket);
+    		    	nodeCon.setTargetGraphName(entry.getSourceServer());    	
+    		    	nodeCon.setWeight(1);
+    		    	
+    		    	if (nodeConnections.get(sourceLinkBucket + "-" + entry.getSourceServer()) != null) {
+    		    		SAMNodeConnection con = nodeConnections.get(sourceLinkBucket + "-" + entry.getSourceServer());
+    		    		con.setWeight(con.getWeight() + 1); 
+    		    		nodeConnections.put(sourceLinkBucket + "-" + entry.getSourceServer(), con);
+    		    	} else {
+    		    		nodeConnections.put(sourceLinkBucket + "-" + entry.getSourceServer(), nodeCon);
+    		    	}
+    			} 
+    			
+    			sourceLinkBucket = entry.getSourceServer(); 
+    		}
+    	}
     	
-    	SAMNodeConnection nodeCon = new SAMNodeConnection();
-    	nodeCon.setSourceGraphName("test");
-    	nodeCon.setTargetGraphName("test2");
-    	
-    	nodeConnection.add(nodeCon);
+    	nodeConnection.addAll(nodeConnections.values());    	
     	return new SAMNodeConnectionResult(nodeConnection);
     }
     
