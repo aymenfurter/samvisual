@@ -5,18 +5,36 @@ import java.util.Collections;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.nio.entity.NStringEntity;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
 
 import ch.aymenfurter.elk.model.ResponseContainer;
 
 public class ELKClient {
+	private static String USERNAME = "";
+	private static String PWD = "";
+	private static String ESHOST = "";
+	private static String INDEXNAME = "";
+	
 	public static ResponseContainer getEntries() {
+		final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+		credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(USERNAME, PWD));
 		
-		RestClient restClient = RestClient.builder(new HttpHost("localhost", 9200, "http")).build();
+		RestClient restClient = RestClient.builder(new HttpHost(ESHOST, 9200, "https")).setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
+            @Override
+            public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
+                return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+            }
+        }).build();
 		
 		Response resp = null;
 		
@@ -36,7 +54,7 @@ public class ELKClient {
 				"            {" +
 				" 		      \"range\": {" +
 				"                \"@timestamp\": {" +
-				"                   \"gte\": \"now-48h\"," +
+				"                   \"gte\": \"now-30d\"," +
 				"            	   \"lte\": \"now\"" +
 				"                }" +
 				"              }" +
@@ -59,10 +77,10 @@ public class ELKClient {
 				"      \"aggs\": {" +
 				"        \"3\": {" +
 				"          \"terms\": {" +
-				"            \"field\": \"hostName\"," +
+				"            \"field\": \"service\"," +
 				"            \"size\": 0," +
 				"            \"order\": {" +
-				"              \"_term\": \"desc\"" +
+				"              \"_count\": \"desc\"" +
 				"            }" +
 				"          }" +
 				"        }" +
@@ -77,7 +95,7 @@ public class ELKClient {
 		try {
 			resp = restClient.performRequest(
 			        "GET",
-			        "/sam/1/_search",
+			        "/" + INDEXNAME + "/_search",
 			        Collections.<String, String>emptyMap(),
 			        entity);
 			
