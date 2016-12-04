@@ -54,7 +54,7 @@ public class ELKClient {
 				"            {" +
 				" 		      \"range\": {" +
 				"                \"@timestamp\": {" +
-				"                   \"gte\": \"now-30d\"," +
+				"                   \"gte\": \"now-1d\"," +
 				"            	   \"lte\": \"now\"" +
 				"                }" +
 				"              }" +
