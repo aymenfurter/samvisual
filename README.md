@@ -13,4 +13,5 @@ A utility to visualize relations between services based on Talend Service Activi
 ## Prerequisites
 - SAM Data needs to be stored in Elastic Search (See: https://help.talend.com/display/TalendESBInfrastructureServicesConfigurationGuide62EN/4.6.3+Server+persistence+and+post-processing)
 
-
+## Please notice
+This is just a Prototype. Use on your own risk.
