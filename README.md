@@ -1,5 +1,6 @@
 ## How to run
 $ mvn clean install
+
 $ mvn clean jetty:run
 
 ## SAM Visual
